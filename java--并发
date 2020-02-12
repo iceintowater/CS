@@ -1,0 +1,109 @@
+# hashmap
+jdk 1.8  解决jdk1.7 扩容时机 死循环问题
+并发情况下数据丢失
+非典型状况-数据丢失
+例子：
+/**
+ * @(#)MutiHashMap.java, 2020/2/12.
+ * <p/>
+ * Copyright 2020 Netease, Inc. All rights reserved.
+ * NETEASE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ */
+package aqx;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+public class MutiHashMap {
+    private static AtomicInteger ai = new AtomicInteger(0);
+    private static Map<Integer, Integer> map = new HashMap<Integer, Integer>(1);
+    private static int totalThread=1;
+    private static CountDownLatch countDownLatch = new CountDownLatch(totalThread);
+    public static void main(String[] args) throws InterruptedException {
+        HashMapThread hmt0 = new HashMapThread();
+        for(int i=0;i<totalThread;i++){
+          new HashMapThread().start();
+        }
+        countDownLatch.await();
+        for (int i= 1; i <= 10000; i++) {
+            //检测数据是否发生丢失
+            Integer value = map.get(i);
+            if (value==null) {
+                System.out.println(i + "数据丢失");
+            }
+            else
+                System.out.println(value);
+        }
+        System.out.println("main end");
+
+    }
+    static class HashMapThread extends Thread
+    {
+        @Override
+        public void run()
+        {
+            while (ai.get() < 10000)
+            {
+                map.put(ai.get(), ai.get());
+                ai.incrementAndGet();
+            }
+            countDownLatch.countDown();
+            System.out.println(Thread.currentThread().getName() + "执行结束完");
+        }
+    }
+}
+结论：看到有大量的数据丢失。贴上put的源码
+/**
+     * Implements Map.put and related methods
+     *
+     * @param hash hash for key
+     * @param key the key
+     * @param value the value to put
+     * @param onlyIfAbsent if true, don't change existing value
+     * @param evict if false, the table is in creation mode.
+     * @return previous value, or null if none
+     */
+    final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+                   boolean evict) {
+        Node<K,V>[] tab; Node<K,V> p; int n, i;
+        //此时，已经拿到了头节点---①
+        if ((tab = table) == null || (n = tab.length) == 0)
+            n = (tab = resize()).length;
+        if ((p = tab[i = (n - 1) & hash]) == null)
+            tab[i] = newNode(hash, key, value, null);
+        else {
+            Node<K,V> e; K k;
+            if (p.hash == hash &&
+                ((k = p.key) == key || (key != null && key.equals(k))))
+                e = p;
+            else if (p instanceof TreeNode)
+                e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+            else {
+                for (int binCount = 0; ; ++binCount) {
+                    if ((e = p.next) == null) {
+                        p.next = newNode(hash, key, value, null);
+                        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                            treeifyBin(tab, hash);
+                        break;
+                    }
+                    if (e.hash == hash &&
+                        ((k = e.key) == key || (key != null && key.equals(k))))
+                        break;
+                    p = e;
+                }
+            }
+            if (e != null) { // existing mapping for key
+                V oldValue = e.value;
+                if (!onlyIfAbsent || oldValue == null)
+                    e.value = value;
+                afterNodeAccess(e);
+                return oldValue;
+            }
+        }
+        ++modCount;
+        if (++size > threshold)
+            resize();
+        afterNodeInsertion(evict);
+        return null;
+    }
+原因：在标注①的位置，线程已经拿到了头结点和hash桶，若此时cpu时间让出，而在该重新获得时间前，这个hash桶已经发被其他线程更改过，那么在该线程重入后，他将持有一个过期的桶和头结点，并且覆盖之前其他线程的记录，造成了数据丢失。
