@@ -1,1 +1,35 @@
-
+  面对线上的各个error（如oom,cpu100%等）,不像exception可以通过调试来分析。有时我们需要jvm工具来定位问题所在。
+  本文对jstack,jmap、jhat,jstat,java visual使用介绍。以及相关命令介绍。
+  top、ps命令:
+  查询进程使用内存和cpu情况，内存详细到新生代、老年代
+  jvm options:-XX:+PrintGCDetails：服务启动时，在项目停止时也能都到堆内存情况。但是线上不会这么定位问题。
+  （1）jstack
+  记录jvm中线程快照。使用场景：我们需要了解线程的调用栈以及状态，定位代码，发现是否有死锁或者循环。
+  具体流程：
+  查看各个进程使用cpu情况   
+  top
+  查看该进程中各个线程使用情况，获取tid
+  ps -mp [pid] -o THREAD,tid,time
+  tid转成16进制
+  printf “%x\n” [tid]
+  查看线程具体信息:定位具体的代码位置
+  jstack [pid] |grep [tid] -A 60
+ （2）jstat
+  显示出虚拟机进程中的类装载、内存、垃圾收集、JIT编译等运行数据
+  (3)jmap、jhat
+   jmap dump出堆栈，jhat进行分析。
+  【错误提示】jhat throwing unrecognized magic number
+   主要原因：got the wrong way to generate jvm dump file. the error occurs when using jmap -histo {pid} > dump.log.
+   解决方式：jmap -dump:live;file=filename pid
+   jhat内置了服务器，可以页面形式浏览class数据
+  （4）java visual
+   可以看进程中线程个数以及线程运行时长；cpu使用情况；堆的使用情况；以及类以及类的实例情况。
+   但有在操作的时候两点需要注意：
+   【1】dump是某一时间的，需要不断去dump不同时间文件
+   【2】应用当初始设置的堆内存不满足应用所需，应用会使用默认的堆内存设置
+   【好处】：可以实时、直观观察线上应用运行状态；支持出现oom的时候存储堆快照；支持与另一个堆转储进行比较；支持手动执行垃圾回收；
+   【坏处】：不能显示堆中各个区域大小，以及统计垃圾回收次数；
+   （5）jmeter
+    最后安利一款非常好用的压测工具，从安装到学会使用十分钟左右。
+ 
+    
