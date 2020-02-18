@@ -16,12 +16,13 @@
 （1）参数映射和动态sql生成
 动态sql生成：通过传入的参数值，使用 Ognl 来动态地构造SQL语句。
 参数映射：对于java 数据类型和jdbc数据类型之间的转换：这里有包括两个过程：查询阶段，我们要将java类型的数据，转换成jdbc类型的数据，通过 preparedStatement.setXXX() 来设值；另一个就是对resultset查询结果集的jdbcType 数据转换成java 数据类型
+
 （2）sql语句执行，以及封装结果集合list<E>
 
 ### 框架支撑层
 事务管理、连接池管理、缓存管理
 
-## 2、流程
+## 2、代码级别组件间关系
 
 sqlsession->executor->statehandler  ( param result type) + boundsql(mapperstatement(sqlsource+resultmap))
 
