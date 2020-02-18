@@ -51,7 +51,7 @@ Configuration        MyBatis所有的配置信息都维持在Configuration对象
 
 ### 与heibernate之间的区别
 
-   1、在项目开发过程当中，就速度而言：
+    1、 在项目开发过程当中，就速度而言：
 
             hibernate开发中，sql语句已经被封装，直接可以使用，加快系统开发；
 
