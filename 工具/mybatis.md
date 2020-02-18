@@ -2,7 +2,7 @@
 ## 0、定义与背景
 一个半ORM（对象关系映射）框架，它内部封装了JDBC，开发时只需要关注SQL语句本身，不需要花费精力去处理加载驱动、创建连接、创建statement等繁杂的过程。程序员直接编写原生态sql，可以严格控制sql执行性能，灵活度高。
 ## 1、原理
-使用的是代理技术。
+mapper.xml的方法使用的是代理技术。
 ### 接口层：
 （1）mapper.xml变成接口，每一个<mapper> 节点抽象为一个 Mapper 接口方法，即<select|update|delete|insert> 节点的id值为Mapper 接口中的方法名称
     接口层提供了用户操作数据库的api(crud).
@@ -49,4 +49,18 @@ BoundSql             表示动态生成的SQL语句以及相应的参数信息
 
 Configuration        MyBatis所有的配置信息都维持在Configuration对象之中
 
+### 与heibernate之间的区别
 
+   在项目开发过程当中，就速度而言：
+
+            hibernate开发中，sql语句已经被封装，直接可以使用，加快系统开发；
+
+            Mybatis 属于半自动化，sql需要手工完成，稍微繁琐；
+
+        但是，凡事都不是绝对的，如果对于庞大复杂的系统项目来说，发杂语句较多，选择hibernate 就不是一个好方案。
+
+    2.2 sql优化方面
+
+        Hibernate 自动生成sql,有些语句较为繁琐，会多消耗一些性能；
+
+        Mybatis 手动编写sql，可以避免不需要的查询，提高系统性能；
