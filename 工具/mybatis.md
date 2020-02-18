@@ -51,7 +51,7 @@ Configuration        MyBatis所有的配置信息都维持在Configuration对象
 
 ### 与heibernate之间的区别
 
-   在项目开发过程当中，就速度而言：
+   1、在项目开发过程当中，就速度而言：
 
             hibernate开发中，sql语句已经被封装，直接可以使用，加快系统开发；
 
@@ -59,7 +59,7 @@ Configuration        MyBatis所有的配置信息都维持在Configuration对象
 
         但是，凡事都不是绝对的，如果对于庞大复杂的系统项目来说，发杂语句较多，选择hibernate 就不是一个好方案。
 
-    2.2 sql优化方面
+    2、 sql优化方面
 
         Hibernate 自动生成sql,有些语句较为繁琐，会多消耗一些性能；
 
