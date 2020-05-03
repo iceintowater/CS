@@ -1,4 +1,4 @@
-mac charles不能抓包问题处理  
+ 
 #  1. charles不能抓包  
 
 在mac上面，一般使用charles进行抓包，方便开发iOS进行debug和调试。近期，charles不能抓取mac上面的网络请求，这让笔者的开发很麻烦。
